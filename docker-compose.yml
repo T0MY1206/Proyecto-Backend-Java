@@ -1,0 +1,27 @@
+services:
+  pruebatecsupermercado:
+    build: Proyecto-Backend-Java
+    mem_limit: 512m
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:mysql://pruebatecsuper:3306/mydb?createDatabaseIfNotExist=true&serverTimezone=UTC
+      DB_USER_NAME: root
+      DB_PASSWORD: 1234
+    restart: always
+    depends_on:
+      pruebatecsuper:
+        condition: service_healthy
+
+  pruebatecsuper:
+    image: mysql:9.6.0
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: mydb
+    restart: always
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 10s
+      retries: 10
