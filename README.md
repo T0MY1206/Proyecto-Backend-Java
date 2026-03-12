@@ -8,11 +8,10 @@ Desarrollada con **Spring Boot 4** y **Java 25**.
 ## 🚀 Inicio rápido
 
 ```bash
-# Con Docker (recomendado)
-docker-compose up -d
-
-# La API estará disponible en http://localhost:8080
+mvn spring-boot:run
 ```
+
+La API estará disponible en http://localhost:8080
 
 ---
 
@@ -23,7 +22,6 @@ docker-compose up -d
 - [Dependencias](#-dependencias)
 - [Código Fuente](#-código-fuente)
 - [Tests](#-tests)
-- [Documentación Existente](#-documentación-existente)
 - [Scripts de Build y Ejecución](#-scripts-de-build-y-ejecución)
 - [Configuraciones Especiales](#-configuraciones-especiales)
 - [Requisitos](#-requisitos)
@@ -34,41 +32,37 @@ docker-compose up -d
 
 ## 📁 Estructura del Proyecto
 
+El proyecto es la raíz del repositorio (no hay subcarpeta intermedia):
+
 ```
-c:\Proyectos\Java\
-├── docker-compose.yml              # Orquestación Docker (app + MySQL)
-├── README.md                       # Este archivo
-└── Proyecto-Backend-Java/         # Aplicación Spring Boot
-    ├── pom.xml                    # Configuración Maven
-    ├── Dockerfile                 # Imagen Docker de la aplicación
-    ├── README.md                  # Documentación del submódulo
-    ├── mvnw                       # Maven Wrapper (Unix)
-    ├── mvnw.cmd                   # Maven Wrapper (Windows)
-    ├── .gitignore
-    ├── .mvn/
-    │   └── wrapper/
-    │       ├── maven-wrapper.properties
-    │       └── maven-wrapper.jar   # (excluido en .gitignore)
-    ├── .idea/                     # Configuración IntelliJ IDEA
-    ├── src/
-    │   ├── main/
-    │   │   ├── java/com/example/demo/
-    │   │   │   ├── PruebaTecSupermercadoApplication.java  # Punto de entrada
-    │   │   │   ├── controller/    # Controladores REST
-    │   │   │   ├── dto/           # DTOs request/response
-    │   │   │   ├── Exception/     # Excepciones personalizadas
-    │   │   │   ├── mapper/        # Entity ↔ DTO
-    │   │   │   ├── model/         # Entidades JPA
-    │   │   │   ├── repository/    # Repositorios Spring Data JPA
-    │   │   │   └── service/       # Lógica de negocio
-    │   │   └── resources/
-    │   │       ├── application.yaml
-    │   │       └── utils/
-    │   │           └── docker-compose(copia).txt
-    │   └── test/
-    │       └── java/com/example/demo/
-    │           └── PruebaTecSupermercadoApplicationTests.java
-    └── target/                    # Artefactos de compilación (generado)
+Proyecto-Backend-Java/            # Raíz del repo (este proyecto)
+├── README.md
+├── pom.xml
+├── mvnw
+├── mvnw.cmd
+├── .gitignore
+├── .mvn/
+│   └── wrapper/
+│       ├── maven-wrapper.properties
+│       └── maven-wrapper.jar
+├── src/
+│   ├── main/
+│   │   ├── java/com/example/demo/
+│   │   │   ├── PruebaTecSupermercadoApplication.java
+│   │   │   ├── controller/
+│   │   │   ├── dto/
+│   │   │   ├── Exception/
+│   │   │   ├── mapper/
+│   │   │   ├── model/
+│   │   │   ├── repository/
+│   │   │   └── service/
+│   │   └── resources/
+│   │       ├── application.yaml
+│   │       └── schema-fix-drop-tables.sql
+│   └── test/
+│       └── java/com/example/demo/
+│           └── PruebaTecSupermercadoApplicationTests.java
+└── target/                        # Generado por Maven
 ```
 
 ---
@@ -93,34 +87,15 @@ Configuración de la aplicación Spring Boot:
 | Propiedad | Descripción |
 |-----------|-------------|
 | `spring.application.name` | pruebatecsupermercado |
-| `spring.datasource.url` | `${DB_URL}` (variable de entorno) |
-| `spring.datasource.username` | `${DB_USER_NAME}` |
-| `spring.datasource.password` | `${DB_PASSWORD}` |
+| `spring.datasource.url` | URL JDBC PostgreSQL (o variable de entorno) |
+| `spring.datasource.username` | Usuario de BD |
+| `spring.datasource.password` | Contraseña de BD |
 | `spring.jpa.hibernate.ddl-auto` | update |
 | `spring.jpa.show-sql` | true |
-| `spring.jpa.properties.hibernate.dialect` | `${DB_PLATFORM}` |
+| `spring.jpa.properties.hibernate.dialect` | org.hibernate.dialect.PostgreSQLDialect |
 | `server.port` | 8080 |
 
-### 3. `docker-compose.yml` (raíz del proyecto)
-
-- **Servicio `pruebatecsupermercado`**: Aplicación Spring Boot
-  - Puerto: 8080
-  - Memoria: 512MB
-  - Depende de MySQL con healthcheck
-
-- **Servicio `pruebatecsuper`**: MySQL 9.6.0
-  - Puerto expuesto: 3307 (host) → 3306 (contenedor)
-  - Base de datos: `mydb`
-  - Host interno Docker: `pruebatecsuper` (usado en `DB_URL` por la app)
-  - Healthcheck para esperar a que MySQL esté listo
-
-### 4. `Dockerfile`
-
-- Imagen base: `eclipse-temurin:25-jdk-alpine`
-- JAR: `target/demo-0.0.1.jar`
-- Puerto: 8080
-
-### 5. Maven Wrapper (`.mvn/wrapper/maven-wrapper.properties`)
+### 3. Maven Wrapper (`.mvn/wrapper/maven-wrapper.properties`)
 
 - Wrapper: 3.3.4
 - Maven: 3.9.12
@@ -135,7 +110,7 @@ Configuración de la aplicación Spring Boot:
 |-------------|-----------|
 | `spring-boot-starter-data-jpa` | Persistencia JPA/Hibernate |
 | `spring-boot-starter-webmvc` | API REST (Spring MVC) |
-| `mysql-connector-j` (9.6.0) | Driver MySQL (scope: runtime) |
+| `postgresql` | Driver PostgreSQL (scope: runtime) |
 | `lombok` | Reducción de boilerplate (getters, builders, etc.) |
 | `h2` | Base de datos en memoria para tests (scope: runtime) |
 
@@ -225,18 +200,12 @@ Configuración de la aplicación Spring Boot:
 ### Ejecución
 
 ```bash
-cd Proyecto-Backend-Java
 mvn test
 ```
 
 - **Base de datos en tests:** H2 en memoria (configurado por los starters de test).
 
 ---
-
-## 📚 Documentación Existente
-
-- **`Proyecto-Backend-Java/README.md`**: Documentación básica del submódulo con requisitos, tecnologías, configuración, ejecución, API y tests. Incluye algunas líneas pegadas que conviene formatear.
-- **`Proyecto-Backend-Java/src/main/resources/utils/docker-compose(copia).txt`**: Copia del `docker-compose.yml` de la raíz.
 
 ---
 
@@ -263,12 +232,11 @@ mvn test
 
 | Variable | Descripción | Ejemplo |
 |----------|-------------|---------|
-| `DB_URL` | URL JDBC | `jdbc:mysql://localhost:3306/pruebatecsuper?createDatabaseIfNotExist=true&serverTimezone=UTC` |
-| `DB_USER_NAME` | Usuario de BD | `root` |
-| `DB_PASSWORD` | Contraseña de BD | `1234` |
-| `DB_PLATFORM` | Dialecto Hibernate | `org.hibernate.dialect.MySQLDialect` |
+| `SPRING_DATASOURCE_URL` | URL JDBC | `jdbc:postgresql://localhost:5432/mydb` |
+| `SPRING_DATASOURCE_USERNAME` | Usuario de BD | `postgres` |
+| `SPRING_DATASOURCE_PASSWORD` | Contraseña de BD | `1234` |
 
-**Nota sobre Docker Compose:** El `docker-compose.yml` de la raíz no incluye `DB_PLATFORM` porque Hibernate puede inferir el dialecto en algunos entornos. Si al levantar con `docker-compose up` aparece un error relacionado con el dialecto, añade `DB_PLATFORM: org.hibernate.dialect.MySQLDialect` al bloque `environment` del servicio `pruebatecsupermercado`.
+**Nota:** En `application.yaml` la base de datos puede configurarse también con variables de entorno. El dialecto Hibernate para PostgreSQL es `org.hibernate.dialect.PostgreSQLDialect` (ya configurado por defecto en la aplicación).
 
 ### Lombok
 
@@ -280,76 +248,46 @@ mvn test
 - `ddl-auto: update` para crear/actualizar esquema automáticamente.
 - `show-sql: true` para depuración (log de SQL).
 
+**Si ves errores "there is no primary key for referenced table":** la base ya tenía tablas sin clave primaria (por un arranque anterior u otro origen). Ejecuta en tu base de datos el script `src/main/resources/schema-fix-drop-tables.sql` (en Supabase: SQL Editor) y reinicia la aplicación; Hibernate creará las tablas correctamente.
+
 ---
 
 ## 📦 Requisitos
 
 - **Java 25**
 - **Maven 3.6+** (o Maven Wrapper)
-- **MySQL 8.x** para producción
-- **Docker** y **Docker Compose** (opcional, para ejecución con contenedores)
-
+- **PostgreSQL 12+** para producción
 ---
 
 ## ▶️ Instrucciones de Uso
 
-### Con Maven (sin Docker)
+### Con Maven
 
-1. Arrancar MySQL.
-2. Configurar variables de entorno:
+1. Arrancar PostgreSQL (o usar la URL de Supabase configurada en `application.yaml`).
+2. Configurar variables de entorno (opcional si usas los valores por defecto de `application.yaml`):
 
 **Linux / macOS (bash):**
 ```bash
-export DB_URL="jdbc:mysql://localhost:3306/pruebatecsuper?createDatabaseIfNotExist=true&serverTimezone=UTC"
-export DB_USER_NAME=root
-export DB_PASSWORD=1234
-export DB_PLATFORM=org.hibernate.dialect.MySQLDialect
+export SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/mydb"
+export SPRING_DATASOURCE_USERNAME=postgres
+export SPRING_DATASOURCE_PASSWORD=1234
 ```
 
 **Windows (PowerShell):**
 ```powershell
-$env:DB_URL="jdbc:mysql://localhost:3306/pruebatecsuper?createDatabaseIfNotExist=true&serverTimezone=UTC"
-$env:DB_USER_NAME="root"
-$env:DB_PASSWORD="1234"
-$env:DB_PLATFORM="org.hibernate.dialect.MySQLDialect"
+$env:SPRING_DATASOURCE_URL="jdbc:postgresql://localhost:5432/mydb"
+$env:SPRING_DATASOURCE_USERNAME="postgres"
+$env:SPRING_DATASOURCE_PASSWORD="1234"
 ```
 
-3. Compilar y ejecutar:
+3. Compilar y ejecutar (desde la raíz del repositorio):
 
 ```bash
-cd Proyecto-Backend-Java
 mvn clean install
 mvn spring-boot:run
 ```
 
 Puerto por defecto: **8080**.
-
-### Con Docker Compose
-
-Desde la raíz del proyecto:
-
-```bash
-docker-compose up -d
-```
-
-- API: http://localhost:8080  
-- MySQL (host): puerto **3307**
-
-La aplicación espera a que MySQL pase el healthcheck antes de iniciar.
-
-### Solo la aplicación en Docker
-
-```bash
-cd Proyecto-Backend-Java
-mvn clean package -DskipTests
-docker build -t pruebatecsupermercado .
-docker run -p 8080:8080 \
-  -e DB_URL=jdbc:mysql://host.docker.internal:3306/pruebatecsuper \
-  -e DB_USER_NAME=root \
-  -e DB_PASSWORD=1234 \
-  -e DB_PLATFORM=org.hibernate.dialect.MySQLDialect \
-  pruebatecsupermercado
-```
 
 ---
 
