@@ -1,7 +1,13 @@
-# 🛒 Prueba Técnica – Supermercado API
+# 🛒 Prueba Técnica – Supermercado API (monolito por contexto)
 
 API REST para la **gestión de un supermercado**, incluyendo **productos, sucursales y ventas**.  
 Desarrollada con **Spring Boot 4** y **Java 25**.
+
+El proyecto está organizado como **un solo despliegue (monolito)** con **APIs separadas por contexto**:
+- **Supermercado (actual):** todo lo existente bajo `/api/supermercado/*`
+- **Otros / futuras APIs:** mejoras o APIs de otros proyectos bajo `/api/otro/*`
+
+Puedes distinguir el contexto por **URL** o por **grupos en Swagger UI**.
 
 ---
 
@@ -11,7 +17,8 @@ Desarrollada con **Spring Boot 4** y **Java 25**.
 mvn spring-boot:run
 ```
 
-La API estará disponible en http://localhost:8080
+- **API:** http://localhost:8080  
+- **Swagger UI:** http://localhost:8080/swagger-ui.html (selector de grupo: *supermercado* | *otros*)
 
 ---
 
@@ -27,6 +34,23 @@ La API estará disponible en http://localhost:8080
 - [Requisitos](#-requisitos)
 - [Instrucciones de Uso](#-instrucciones-de-uso)
 - [API REST](#-api-rest)
+- [Separación por contexto (monolito)](#-separación-por-contexto-monolito)
+
+---
+
+## 🔀 Separación por contexto (monolito)
+
+Un solo despliegue expone varias “APIs” diferenciadas por **prefijo de URL** y por **grupo en Swagger**:
+
+| Contexto      | Prefijo URL            | Grupo en Swagger | Uso                          |
+|---------------|------------------------|------------------|------------------------------|
+| **Supermercado** | `/api/supermercado/*` | `supermercado`   | Lo que ya existe (ventas, productos, sucursales) |
+| **Otros**     | `/api/otro/*`          | `otros`          | Futuras mejoras o APIs de otros proyectos       |
+
+- **Por URL:** las peticiones van a `http://localhost:8080/api/supermercado/...` o `http://localhost:8080/api/otro/...`.
+- **Por Swagger:** en http://localhost:8080/swagger-ui.html el desplegable de grupo permite elegir *supermercado* o *otros*.
+
+Para **añadir APIs de otro proyecto o mejoras futuras**: crea controladores bajo el paquete `com.example.demo.otro` (o un subpaquete como `otro.xxx`) y usa `@RequestMapping("/api/otro/...")` para que queden en el mismo contexto y en el grupo *otros* en Swagger.
 
 ---
 
@@ -49,11 +73,13 @@ Proyecto-Backend-Java/            # Raíz del repo (este proyecto)
 │   ├── main/
 │   │   ├── java/com/example/demo/
 │   │   │   ├── PruebaTecSupermercadoApplication.java
-│   │   │   ├── controller/
+│   │   │   ├── config/           # OpenAPI (Swagger) por contexto
+│   │   │   ├── controller/       # Supermercado: ventas, productos, sucursales
 │   │   │   ├── dto/
 │   │   │   ├── Exception/
 │   │   │   ├── mapper/
 │   │   │   ├── model/
+│   │   │   ├── otro/             # Futuras APIs (ej. otro.controller)
 │   │   │   ├── repository/
 │   │   │   └── service/
 │   │   └── resources/
@@ -113,6 +139,7 @@ Configuración de la aplicación Spring Boot:
 | `postgresql` | Driver PostgreSQL (scope: runtime) |
 | `lombok` | Reducción de boilerplate (getters, builders, etc.) |
 | `h2` | Base de datos en memoria para tests (scope: runtime) |
+| `springdoc-openapi-starter-webmvc-ui` | Swagger UI y OpenAPI 3; grupos por contexto (supermercado / otros) |
 
 ### Tests
 
@@ -173,11 +200,23 @@ Configuración de la aplicación Spring Boot:
 
 #### 6. Controladores (`controller/`)
 
+**Contexto Supermercado** (base path `/api/supermercado`):
+
 | Controlador | Base path | Operaciones |
 |-------------|-----------|-------------|
-| `ProductoController` | `/api/productos` | GET, POST, PUT, DELETE |
-| `SucursalController` | `/api/sucursales` | GET, POST, PUT, DELETE |
-| `VentaController` | `/api/ventas` | GET, POST, PUT, DELETE |
+| `ProductoController` | `/api/supermercado/productos` | GET, POST, PUT, DELETE |
+| `SucursalController` | `/api/supermercado/sucursales` | GET, POST, PUT, DELETE |
+| `VentaController` | `/api/supermercado/ventas` | GET, POST, PUT, DELETE |
+
+**Contexto Otros / futuras APIs** (base path `/api/otro`):
+
+| Controlador | Base path | Descripción |
+|-------------|-----------|-------------|
+| `otro.controller.OtroApiController` | `/api/otro` | Placeholder; agregar aquí nuevas APIs de otros proyectos |
+
+#### 6.1. Configuración OpenAPI (`config/`)
+
+- **`OpenApiConfig`**: Define grupos de Swagger **supermercado** y **otros** para filtrar por contexto en la UI.
 
 #### 7. Mapper (`mapper/`)
 
@@ -295,36 +334,44 @@ Puerto por defecto: **8080**.
 
 Base URL: **http://localhost:8080**
 
-### Productos — `/api/productos`
+Todas las APIs del dominio actual están bajo el prefijo **`/api/supermercado`**. Las futuras o de otros proyectos, bajo **`/api/otro`**. En **Swagger UI** (http://localhost:8080/swagger-ui.html) puedes elegir el grupo *supermercado* o *otros* para ver solo ese contexto.
+
+### Productos — `/api/supermercado/productos`
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/api/productos` | Listar productos |
-| POST | `/api/productos` | Crear producto |
-| PUT | `/api/productos/{id}` | Actualizar producto |
-| DELETE | `/api/productos/{id}` | Eliminar producto |
+| GET | `/api/supermercado/productos` | Listar productos |
+| POST | `/api/supermercado/productos` | Crear producto |
+| PUT | `/api/supermercado/productos/{id}` | Actualizar producto |
+| DELETE | `/api/supermercado/productos/{id}` | Eliminar producto |
 
-### Sucursales — `/api/sucursales`
-
-| Método | Endpoint | Descripción |
-|--------|----------|-------------|
-| GET | `/api/sucursales` | Listar sucursales |
-| POST | `/api/sucursales` | Crear sucursal |
-| PUT | `/api/sucursales/{id}` | Actualizar sucursal |
-| DELETE | `/api/sucursales/{id}` | Eliminar sucursal |
-
-### Ventas — `/api/ventas`
+### Sucursales — `/api/supermercado/sucursales`
 
 | Método | Endpoint | Descripción |
 |--------|----------|-------------|
-| GET | `/api/ventas` | Listar ventas |
-| POST | `/api/ventas` | Crear venta |
-| PUT | `/api/ventas/{id}` | Actualizar venta |
-| DELETE | `/api/ventas/{id}` | Eliminar venta |
+| GET | `/api/supermercado/sucursales` | Listar sucursales |
+| POST | `/api/supermercado/sucursales` | Crear sucursal |
+| PUT | `/api/supermercado/sucursales/{id}` | Actualizar sucursal |
+| DELETE | `/api/supermercado/sucursales/{id}` | Eliminar sucursal |
+
+### Ventas — `/api/supermercado/ventas`
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/supermercado/ventas` | Listar ventas |
+| POST | `/api/supermercado/ventas` | Crear venta |
+| PUT | `/api/supermercado/ventas/{id}` | Actualizar venta |
+| DELETE | `/api/supermercado/ventas/{id}` | Eliminar venta |
+
+### Otros / futuras APIs — `/api/otro`
+
+| Método | Endpoint | Descripción |
+|--------|----------|-------------|
+| GET | `/api/otro/info` | Info del contexto "otros" (ejemplo para nuevas APIs) |
 
 Los cuerpos de las peticiones son JSON y utilizan los DTOs del proyecto.
 
-### Ejemplo de producto (POST `/api/productos`)
+### Ejemplo de producto (POST `/api/supermercado/productos`)
 
 ```json
 {
@@ -335,7 +382,7 @@ Los cuerpos de las peticiones son JSON y utilizan los DTOs del proyecto.
 }
 ```
 
-### Ejemplo de sucursal (POST `/api/sucursales`)
+### Ejemplo de sucursal (POST `/api/supermercado/sucursales`)
 
 ```json
 {
@@ -344,7 +391,7 @@ Los cuerpos de las peticiones son JSON y utilizan los DTOs del proyecto.
 }
 ```
 
-### Ejemplo de venta (POST `/api/ventas`)
+### Ejemplo de venta (POST `/api/supermercado/ventas`)
 
 ```json
 {

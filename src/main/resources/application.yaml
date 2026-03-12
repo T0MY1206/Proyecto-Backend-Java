@@ -35,3 +35,12 @@ spring:
       mode: never
 server:
   port: 8080
+
+# Swagger / OpenAPI: documentación por contexto (supermercado vs otros)
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+  show-actuator: false

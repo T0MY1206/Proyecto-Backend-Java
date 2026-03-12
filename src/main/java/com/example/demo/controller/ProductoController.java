@@ -1,8 +1,8 @@
 package com.example.demo.controller;
 
-
 import com.example.demo.dto.ProductoDTO;
 import com.example.demo.service.IProductoService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,8 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+@Tag(name = "Supermercado - Productos", description = "API de productos del dominio supermercado")
 @RestController
-@RequestMapping("/api/productos")
+@RequestMapping("/api/supermercado/productos")
 public class ProductoController {
 
     @Autowired
@@ -27,7 +28,7 @@ public class ProductoController {
 
         ProductoDTO producto = productoService.crearProducto(productoDTO);
 
-        return ResponseEntity.created(URI.create("/api/productos" + producto.getId())).body(producto);
+        return ResponseEntity.created(URI.create("/api/supermercado/productos/" + producto.getId())).body(producto);
     }
 
     @PutMapping("/{id}")

@@ -1,8 +1,8 @@
 package com.example.demo.controller;
 
-
 import com.example.demo.dto.SucursalDTO;
 import com.example.demo.service.ISucursalService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,8 +10,9 @@ import org.springframework.web.bind.annotation.*;
 import java.net.URI;
 import java.util.List;
 
+@Tag(name = "Supermercado - Sucursales", description = "API de sucursales del dominio supermercado")
 @RestController
-@RequestMapping("/api/sucursales")
+@RequestMapping("/api/supermercado/sucursales")
 public class SucursalController {
 
     @Autowired
@@ -25,7 +26,7 @@ public class SucursalController {
     @PostMapping
     public ResponseEntity<SucursalDTO> crearSucursal(@RequestBody SucursalDTO sucursalDTO){
         SucursalDTO sucursal = sucursalService.crearSucursal(sucursalDTO);
-        return ResponseEntity.created(URI.create("/api/sucursales/" + sucursal.getId())).body(sucursal);
+        return ResponseEntity.created(URI.create("/api/supermercado/sucursales/" + sucursal.getId())).body(sucursal);
     }
 
     @PutMapping("/{id}")
