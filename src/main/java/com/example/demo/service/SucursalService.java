@@ -1,52 +1,68 @@
 package com.example.demo.service;
 
-import com.example.demo.Exception.NotFoundException;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.dto.SucursalDTO;
-import com.example.demo.mapper.Mapper;
+import com.example.demo.mapper.SucursalMapper;
 import com.example.demo.model.Sucursal;
 import com.example.demo.repository.SucursalRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
-
+@Slf4j
 @Service
-public class SucursalService implements ISucursalService{
+@RequiredArgsConstructor
+public class SucursalService implements ISucursalService {
 
-    @Autowired
-    private SucursalRepository sucursalRepository;
+    private final SucursalRepository sucursalRepository;
+    private final SucursalMapper sucursalMapper;
 
     @Override
-    public List<SucursalDTO> obtenerSucursales() {
-        return sucursalRepository.findAll().stream().map(Mapper::toDTO).toList();
+    @Transactional(readOnly = true)
+    public Page<SucursalDTO> obtenerSucursales(Pageable pageable) {
+        return sucursalRepository.findAll(pageable)
+                .map(sucursalMapper::toDTO);
     }
 
     @Override
+    @Transactional(readOnly = true)
+    public SucursalDTO obtenerSucursalPorId(Long id) {
+        Sucursal sucursal = sucursalRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada"));
+        return sucursalMapper.toDTO(sucursal);
+    }
+
+    @Override
+    @Transactional
     public SucursalDTO crearSucursal(SucursalDTO sucursalDTO) {
-        Sucursal sucursal = Sucursal.builder()
-                .nombre(sucursalDTO.getNombre())
-                .direccion(sucursalDTO.getDireccion())
-                .build();
-        return Mapper.toDTO(sucursalRepository.save(sucursal));
+        log.info("Creando sucursal: {}", sucursalDTO.getNombre());
+        Sucursal sucursal = sucursalMapper.toEntity(sucursalDTO);
+        return sucursalMapper.toDTO(sucursalRepository.save(sucursal));
     }
 
     @Override
+    @Transactional
     public SucursalDTO actualizarSucursal(Long id, SucursalDTO sucursalDTO) {
+        Sucursal sucursal = sucursalRepository
+                .findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Sucursal no encontrada"));
 
-        Sucursal sucursal = sucursalRepository.findById(id).orElseThrow(() -> new NotFoundException("Sucursal no encontrado"));
         sucursal.setNombre(sucursalDTO.getNombre());
         sucursal.setDireccion(sucursalDTO.getDireccion());
-        return Mapper.toDTO(sucursalRepository.save(sucursal));
 
+        return sucursalMapper.toDTO(sucursalRepository.save(sucursal));
     }
 
     @Override
+    @Transactional
     public void eliminarSucursal(Long id) {
-
-        if(!sucursalRepository.existsById(id)){
-            throw new NotFoundException("Sucursal no encontrado");
+        if (!sucursalRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Sucursal no encontrada");
         }
         sucursalRepository.deleteById(id);
-
+        log.info("Sucursal eliminada: id={}", id);
     }
 }

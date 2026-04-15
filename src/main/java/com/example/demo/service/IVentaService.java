@@ -1,12 +1,18 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.VentaDTO;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface IVentaService {
-    List<VentaDTO> obtenerVentas();
+
+    Page<VentaDTO> obtenerVentas(Pageable pageable);
+
+    VentaDTO obtenerVentaPorId(Long id);
+
     VentaDTO crearVenta(VentaDTO venta);
+
     VentaDTO actualizarVenta(Long id, VentaDTO venta);
+
     void eliminarVenta(Long id);
 }

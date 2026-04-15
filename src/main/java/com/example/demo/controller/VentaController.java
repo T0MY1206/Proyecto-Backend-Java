@@ -3,39 +3,51 @@ package com.example.demo.controller;
 import com.example.demo.dto.VentaDTO;
 import com.example.demo.service.IVentaService;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import org.springframework.beans.factory.annotation.Autowired;
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
-import java.util.List;
 
 @Tag(name = "Supermercado - Ventas", description = "API de ventas del dominio supermercado")
 @RestController
 @RequestMapping("/api/supermercado/ventas")
+@RequiredArgsConstructor
 public class VentaController {
-    @Autowired
-    private IVentaService ventaService;
+
+    private final IVentaService ventaService;
 
     @GetMapping
-    public ResponseEntity<List<VentaDTO>> obtenerVentas(){
-        return ResponseEntity.ok(ventaService.obtenerVentas());
+    public ResponseEntity<Page<VentaDTO>> obtenerVentas(
+            @PageableDefault(size = 20, sort = "fecha") Pageable pageable) {
+        return ResponseEntity.ok(ventaService.obtenerVentas(pageable));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<VentaDTO> obtenerVentaPorId(@PathVariable Long id) {
+        return ResponseEntity.ok(ventaService.obtenerVentaPorId(id));
     }
 
     @PostMapping
-    public ResponseEntity<VentaDTO> crearVenta(@RequestBody VentaDTO ventaDTO){
-
+    public ResponseEntity<VentaDTO> crearVenta(@Valid @RequestBody VentaDTO ventaDTO) {
         VentaDTO venta = ventaService.crearVenta(ventaDTO);
-        return ResponseEntity.created(URI.create("/api/supermercado/ventas/" + venta.getId())).body(venta);
+        return ResponseEntity
+                .created(URI.create("/api/supermercado/ventas/" + venta.getId()))
+                .body(venta);
     }
 
     @PutMapping("/{id}")
-    public VentaDTO actualizarVenta(@PathVariable Long id, @RequestBody VentaDTO ventaDTO){
-        return ventaService.actualizarVenta(id, ventaDTO);
+    public ResponseEntity<VentaDTO> actualizarVenta(@PathVariable Long id,
+                                                    @Valid @RequestBody VentaDTO ventaDTO) {
+        return ResponseEntity.ok(ventaService.actualizarVenta(id, ventaDTO));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<VentaDTO> eliminarVenta(@PathVariable Long id, @RequestBody VentaDTO ventaDTO){
+    public ResponseEntity<Void> eliminarVenta(@PathVariable Long id) {
         ventaService.eliminarVenta(id);
         return ResponseEntity.noContent().build();
     }
